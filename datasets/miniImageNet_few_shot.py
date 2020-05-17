@@ -16,27 +16,22 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import sys
 sys.path.append("../")
 from configs import *
+import os
+import json
 
 identity = lambda x:x
 class SimpleDataset:
-    def __init__(self, transform, target_transform=identity):
+    def __init__(self, data_file, transform, target_transform=identity):
+        with open(data_file, 'r') as f:
+            self.meta = json.load(f)
+
         self.transform = transform
         self.target_transform = target_transform
 
-        self.meta = {}
-
-        self.meta['image_names'] = []
-        self.meta['image_labels'] = []
-
-        d = ImageFolder(miniImageNet_path)
-
-        for i, (data, label) in enumerate(d):
-            self.meta['image_names'].append(data)
-            self.meta['image_labels'].append(label)  
-
     def __getitem__(self, i):
-
-        img = self.transform(self.meta['image_names'][i])
+        image_path = os.path.join(self.meta['image_names'][i])
+        img = Image.open(image_path).convert('RGB')
+        img = self.transform(img)
         target = self.target_transform(self.meta['image_labels'][i])
 
         return img, target
@@ -151,9 +146,10 @@ class SimpleDataManager(DataManager):
         self.trans_loader = TransformLoader(image_size)
 
     def get_data_loader(self, aug): #parameters that would change on train/val set
+        data_file = os.path.join(miniImageNet_path, 'base.json')
         transform = self.trans_loader.get_composed_transform(aug)
-        # dataset = SimpleDataset(transform)
-        dataset = ImageFolder(root=miniImageNet_path, transform=transform)
+        dataset = SimpleDataset(data_file, transform)
+        #dataset = ImageFolder(root=miniImageNet_path, transform=transform)
 
         data_loader_params = dict(batch_size = self.batch_size, shuffle = True, num_workers = 12, pin_memory = True)       
         data_loader = torch.utils.data.DataLoader(dataset, **data_loader_params)
