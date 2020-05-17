@@ -9,7 +9,7 @@ model_dict = dict(
 
 def parse_args(script):
     parser = argparse.ArgumentParser(description= 'few-shot script %s' %(script))
-    parser.add_argument('--dataset'     , default='miniImagenet',        help='training base model')
+    parser.add_argument('--dataset'     , default='miniImageNet',        help='training base model')
     parser.add_argument('--model'       , default='ResNet10',      help='backbone architecture') 
     parser.add_argument('--method'      , default='baseline',   help='baseline/protonet') 
     parser.add_argument('--train_n_way' , default=5, type=int,  help='class num to classify for training')
